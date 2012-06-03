@@ -1,0 +1,51 @@
+\documentclass[12pt]{article}
+%\url{http://tex.stackexchange.com/q/50468/86}
+\usepackage{advi}
+\usepackage{tikz}
+
+
+\usepackage{whizzy-tikz}
+
+% TODO: resize the whole picture to scale it -- easyish
+% TODO: determine how it was specified so that I can match it exactly
+% TODO: use the name/label somehow
+% TODO: make it work for lines, etc.
+
+\begin{document}
+
+Hello world, how are you?
+
+
+\begin{tikzpicture}[x=1em,y=2em]
+  % We can even pass ordinary styles to the node:
+  \advinode{x=15,y=15}[red,draw] {A};
+  \advinode{x=7.9492,y=7.1343}[circle,fill=blue!50] {B};
+  \advinode{x=11.0818,y=4.2996} {C};
+  \advinode{x=9.8302,y=14.9569} {D};
+  \advinode{x=3.0771,y=10.9318} {E};
+  \advinode{x=1.8567,y=7.5898} {F};
+  \advinode{x=11.8097,y=9.6697} {G};
+  \advinode{x=15.2167,y=8.2558} {H};
+  \advinode{x=20.5816,y=-0.7584} {I};
+  \advinode{x=3.3900,y=2.6800} {J};
+  % \node[advi=bob]{x};
+
+  % \node[ADVI] at (8.2663,11.5483) {y};
+
+
+  \draw (0,0) rectangle (20,20);
+
+  \node[ADVI,/tikz/at={(4.6286,2.1118)}] {x};
+  \def\y{0.5}
+  \node[circle,fill=red!60,ADVI] at (2.6817,-\y) {y};
+
+
+  \draw[ADVI] (1,1) -- (2,2) node{z} -- (3,1);
+
+  % \node[ADVI] at (2.6817,-0.5) {y};
+
+\end{tikzpicture}
+
+ Why am I off now, yo?
+
+\end{document}

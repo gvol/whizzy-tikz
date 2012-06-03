@@ -1,0 +1,208 @@
+
+% TODO: resize the whole picture to scale it -- easyish
+% TODO: use correct dimensions -- easy
+% TODO: determine how it was specified so that I can match it exactly
+% TODO: use the name/label somehow
+% TODO: make it work for lines
+
+
+% We need to use some internal commands with `@`s in them for getting
+% the widths of the nodes
+\makeatletter
+% \show\tikz@node@at
+
+% \def \advi@special #1{\advi@special@ {advi: #1}\message{#1}}
+
+\def\my@adviedit#1#2#3#4#5{\adviedit{comm=#1,w=#2,h=#3,x=#4,y=#5}{}}
+
+
+% I found the following in /usr/local/texlive/2011/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+% \tikzoption{at}{\tikz@scan@one@point\tikz@set@at#1}
+% \show\tikz@scan@one@point
+% \def\my@advi@tmp{bob}
+% \def\tikz@set@at#1{\def\my@advi@tmp{#1}\def\tikz@node@at{#1}}%
+
+%{{{ old \advinode code
+
+\tikzset{
+% This is the workhorse style
+  advi/.style={
+% We do the advi stuff after the node has been placed so that we can
+% get access to its width and height.  What this means is that our
+% node ends up being equivalent to
+%  \node[at=(x-value,y-value)] {node text} [advi/set advi={x=,y=}];
+    append after command={[advi/set advi={#1}]},
+% As the advi boxes are specified by lower-left corner, we anchor our
+% node at the lower-left so that the given coordinate is the node
+% coordinate
+    anchor=south west,
+% The parameter #1 is of the form "x=<value>,y=<value>".  We trick
+% TikZ into taking that as defining some keys in the "/tikz/advi"
+% directory
+    advi/.cd,
+    #1,
+% We use the values that have just been set, namely `/tikz/advi/x`
+% and `/tikz/advi/y` to specify the location of the node via the
+% `at` key.  We need to give the full path as we're currently in at
+% `/tikz/advi`
+    /tikz/at={(\pgfkeysvalueof{/tikz/advi/x},\pgfkeysvalueof{/tikz/advi/y})}
+  },
+% This next bit ensures that the `/tikz/advi/x` and `y` keys can be
+% used to store values.
+  advi/.cd,
+  x/.initial=0,
+  y/.initial=0,
+% This is the part that specifies the boxes in the dvi.  This is
+% actually executed after the node has been processed
+  set advi/.code={
+    \pgfpointxy{1}{1}
+    \advixunit \pgf@x
+    \adviyunit \pgf@y
+% As the node has been processed, we can get its width and height by
+% looking at a couple of anchors.
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode.north east)
+    \pgf@xa=\pgf@x
+    \pgf@ya=\pgf@y
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode.south west)
+% We adjust the values to be multiples of `em`s as that's the default
+% for advi/whizzytex
+    \pgfmathsetmacro{\advi@node@w}{(\pgf@xa - \pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@h}{(\pgf@ya - \pgf@y)/\the\advi@edit@yunit}%
+    \pgfmathsetmacro{\advi@node@x}{(\pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@y}{(\pgf@y)/\the\advi@edit@yunit}%
+
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode)
+
+    \pgfmathsetmacro{\advi@node@xm}{(\pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@ym}{(\pgf@y)/\the\advi@edit@yunit}%
+% Finally, we call the `\adviedit` command
+    % \advi@special
+    %     {edit\space
+    %      comm="\string\advinode"\space
+    %      name="really long name:\advi@node@x:\advi@node@y"\space
+    %      line=\the\inputlineno\space
+    %      file=\jobname\space
+    %      xunit=1em\space
+    %      yunit=1em\space
+    %      x=\advi@node@x\space
+    %      y=\advi@node@y\space
+    %      w=\advi@node@w\space
+    %      h=\advi@node@h\space
+    %      d=0.0000\space
+    %      }
+    % \adviedit{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    \adviedit{comm=\advinode,w=\advi@node@w,h=\advi@node@h,#1}{}
+
+    % \adviedit[tikznode:\advi@node@xm:\advi@node@ym]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    % \my@adviedit{advinode:\advi@node@x}{\advi@node@w}{\advi@node@h}{\advi@node@x}{\advi@node@y}
+  }
+}
+
+% This is the command that whizzytex will look for.
+\newcommand{\advinode}[1]{%
+  \node[advi={#1}]
+}
+
+%}}}
+
+% From /usr/local/texlive/2011/texmf-dist/tex/generic/pgf/frontendlayer/tikz/tikz.code.tex
+\def\tikz@scan@no@calculator#1(#2){%
+  % \gdef\my@node@def{#}
+  \edef\tikz@temp{(#2)}%
+  \global\def\my@node@def{(#2)}%
+  \message{\my@node@def}
+  \expandafter\tikz@@scan@@no@calculator\expandafter#1\tikz@temp%
+}
+
+
+\tikzset{
+% This is the workhorse style
+  ADVI/.style={
+% We do the advi stuff after the node has been placed so that we can
+% get access to its width and height.  What this means is that our
+% node ends up being equivalent to
+%  \node[at=(x-value,y-value)] {node text} [advi/set advi={x=,y=}];
+    append after command={[ADVI/set advi]},
+% As the advi boxes are specified by lower-left corner, we anchor our
+% node at the lower-left so that the given coordinate is the node
+% coordinate
+    % anchor=south west,
+% The parameter #1 is of the form "x=<value>,y=<value>".  We trick
+% TikZ into taking that as defining some keys in the "/tikz/advi"
+% directory
+    ADVI/.cd,
+% We use the values that have just been set, namely `/tikz/advi/x`
+% and `/tikz/advi/y` to specify the location of the node via the
+% `at` key.  We need to give the full path as we're currently in at
+% `/tikz/advi`
+    % /tikz/at/.store=\origPos,
+    type/.default=node
+  },
+% This next bit ensures that the `/tikz/advi/x` and `y` keys can be
+% used to store values.
+  % ADVI/.cd,
+% This is the part that specifies the boxes in the dvi.  This is
+% actually executed after the node has been processed
+  ADVI/set advi/.code={
+    \let\this@nodes@def\my@node@def
+    \pgfpointxy{1}{1}
+    \advixunit \pgf@x
+    \adviyunit \pgf@y
+    % \message{^^J}
+    % \message{^^J}
+    % \message{\expandafter\my@node@def}
+    % \message{\tikz@node@at}
+    % \message{^^J}
+    % \message{\the\advi@edit@xunit}
+    % \message{\the\advi@edit@yunit}
+    %
+% As the node has been processed, we can get its width and height by
+% looking at a couple of anchors.
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode.north east)
+    \pgf@xa=\pgf@x
+    \pgf@ya=\pgf@y
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode.south west)
+% We adjust the values to be multiples of `em`s as that's the default
+% for advi/whizzytex
+    \pgfmathsetmacro{\advi@node@w}{(\pgf@xa - \pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@h}{(\pgf@ya - \pgf@y)/\the\advi@edit@yunit}%
+    \pgfmathsetmacro{\advi@node@x}{(\pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@y}{(\pgf@y)/\the\advi@edit@yunit}%
+
+    \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode)
+    \pgfmathsetmacro{\advi@node@xm}{(\pgf@x)/\the\advi@edit@xunit}%
+    \pgfmathsetmacro{\advi@node@ym}{(\pgf@y)/\the\advi@edit@yunit}%
+% Finally, we call the `\adviedit` command
+    % \advi@special
+    %     {edit\space
+    %      comm="\string\advinode"\space
+    %      name="really long name:\advi@node@x:\advi@node@y"\space
+    %      line=\the\inputlineno\space
+    %      file=\jobname\space
+    %      xunit=1em\space
+    %      yunit=1em\space
+    %      x=\advi@node@x\space
+    %      y=\advi@node@y\space
+    %      w=\advi@node@w\space
+    %      h=\advi@node@h\space
+    %      d=0.0000\space
+    %      }
+    % \adviedit{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    % \pgfkeysgetvalue{/tikz/at}{\val}
+    % \xdef\val{\pgfkeysvalueof{/tikz/at}}
+    % \message{^^J}
+    % \pgfkeysifdefined{/tikz/at}{\message{Defined}}{\message{undefined}}
+    % \expandafter\message\expandafter{\val}
+    % \message{^^J}
+    % \message{^^J}
+    % \pgfkeysgetvalue{\pgfkeyscurrentpath}{\temp}%
+    % \pgfkeys{/tikz/at/.print to log}
+    \adviedit[tikznode@\this@nodes@def @\advi@node@x @\advi@node@y @\advi@node@xm @\advi@node@ym]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    % \adviedit[tikznode:\advi@node@xm:\advi@node@ym:\val:\pgfkeysvalueof{/tikz/at}]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    % \my@adviedit{advinode:\advi@node@x}{\advi@node@w}{\advi@node@h}{\advi@node@x}{\advi@node@y}
+  }
+}
+
+% Local Variables:
+% TeX-master: "test"
+% End:

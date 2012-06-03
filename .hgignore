@@ -1,0 +1,6 @@
+syntax: glob
+*.pdf
+*.aux
+*.log
+_region_.*
+*.elc
