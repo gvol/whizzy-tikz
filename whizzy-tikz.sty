@@ -109,8 +109,8 @@
 \def\tikz@scan@no@calculator#1(#2){%
   % \gdef\my@node@def{#}
   \edef\tikz@temp{(#2)}%
-  \global\def\my@node@def{(#2)}%
-  \message{\my@node@def}
+  \global\def\my@node@def{#2}%
+  % \message{\my@node@def}
   \expandafter\tikz@@scan@@no@calculator\expandafter#1\tikz@temp%
 }
 

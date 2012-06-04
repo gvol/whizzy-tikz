@@ -37,7 +37,8 @@ Hello world, how are you?
 
   \node[ADVI,/tikz/at={(4.6286,2.1118)}] {x};
   \def\y{0.5}
-  \node[circle,fill=red!60,ADVI] at (2.6817,-\y) {y};
+  \node[circle,fill=red!60,ADVI={type=macro}] at (2.681,-\y) {y};
+  \node[circle,fill=red!60,ADVI={type=macro}] at (2.98259,18.60109) {yy};
 
 
   \draw[ADVI] (1,1) -- (2,2) node{z} -- (3,1);
