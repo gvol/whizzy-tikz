@@ -30,12 +30,12 @@
           (and (whizzy-goto-file file)
                (prog1 (goto-line (string-to-number line))
                  (end-of-line))
-               (show 'here)
+               ;; (show 'here)
                ;; (insert "xxx")
                (or (re-search-backward regexp (point-min) t)
                    (re-search-forward regexp (point-max) t))
-               (show 'there)
-               (show (buffer-substring-no-properties (match-beginning 1) (match-end 1)))
+               ;; (show 'there)
+               ;; (show (buffer-substring-no-properties (match-beginning 1) (match-end 1)))
                (let ((begin  (match-beginning 1))
                      (modified  (buffer-modified-p))
                      (edited))
@@ -140,8 +140,8 @@ Return nil if not in a tikz environment as defined by
   (save-window-excursion
     (save-excursion
       (save-restriction
-        (show file)
-        (show name)
+        ;; (show file)
+        ;; (show name)
         (and (prog1 (whizzy-goto-file file)
                (widen))
              (goto-char (point-min))
@@ -151,24 +151,35 @@ Return nil if not in a tikz environment as defined by
              ;; (narrow-to-defun)
              ;; (show line)
              ;; (sit-for 2)
-             (show (whizzy-narrow-to-tikz))
+             ;; (show
+             (whizzy-narrow-to-tikz)
+             ;; )
 
              ;; Here we need strict methods of finding and keep loosening them...
 
              (let* (;; type orig x y xmid ymid
                     ;;  0    1   2 3  4    5
                     (pieces (split-string name "@"))
+                    ;; tikz,matcher,precision,duplicate?
+                    ;;   0 ,   1   ,    2    ,    3
+                    (style-pieces (split-string (car pieces) ":"))
+                    (precision (string-to-number (nth 2 style-pieces)))
                     (newx (+ (string-to-number (nth 4 pieces))
                              (- (string-to-number dx)
                                 (string-to-number (nth 2 pieces)))))
                     (newy (+ (string-to-number (nth 5 pieces))
                              (- (string-to-number dy)
                                 (string-to-number (nth 3 pieces)))))
-                    (replacement (format "%s,%s" newx newy))
+                    ;; TODO: don't include trailing zeros? -- should I round instead?
+                    (specifier (format "%%.%df,%%.%df" precision precision))
+                    (replacement (format specifier newx newy))
                     ;; (regexp (aget whizzy-tikz-node-regexp 'lax))
                     (modified  (buffer-modified-p)))
-               (show pieces)
-               (show replacement)
+               ;; (show pieces)
+               ;; (show style-pieces)
+               ;; (show precision)
+               ;; (show specifier)
+               ;; (show replacement)
                (dolist (regexp (list
                                 ;; Check for an exact match
                                 (concat "\\b\\(" (nth 1 pieces) "\\)\\b")
@@ -182,18 +193,30 @@ Return nil if not in a tikz environment as defined by
 
                    ;; (show 'there)
                    ;; (sit-for 5)
+
+                   ;; We found one --
                    (let (;(begin  (match-beginning 1))
                          (edited
                           ;;  (save-match-data
                           ;;    (and (string= (match-string-no-properties 1) dx)
                           ;;         (string= (match-string-no-properties 2) dy))))
                           t)
-                         )
+                         (saved-line (and (string= "duplicate" (nth 3 style-pieces))
+                                          (buffer-substring-no-properties
+                                           (line-beginning-position)
+                                           (line-end-position)))))
+                     (sit-for 1)
+                     ;; (goto-char )
+
+
                      ;; (show (match-string-no-properties 0))
                      ;; (show (match-beginning 1))
                      ;; (show (match-end 1))
                      ;; (show (replace-match replacement t t nil 1))
                      (replace-match replacement t t nil 1)
+                     (when saved-line
+                       (beginning-of-line)
+                       (insert saved-line))
                      ;; Have to figure out how to account for center vs lower left
                      ;; (replace-match dx t t nil 1)
                      ;; (replace-match dy t t nil 2) ;or the other order??? Can you do both?

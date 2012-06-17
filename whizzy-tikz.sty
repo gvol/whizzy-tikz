@@ -8,7 +8,7 @@
 
 % We need to use some internal commands with `@`s in them for getting
 % the widths of the nodes
-\makeatletter
+% \makeatletter
 % \show\tikz@node@at
 
 % \def \advi@special #1{\advi@special@ {advi: #1}\message{#1}}
@@ -114,7 +114,6 @@
   \expandafter\tikz@@scan@@no@calculator\expandafter#1\tikz@temp%
 }
 
-
 \tikzset{
 % This is the workhorse style
   ADVI/.style={
@@ -122,7 +121,7 @@
 % get access to its width and height.  What this means is that our
 % node ends up being equivalent to
 %  \node[at=(x-value,y-value)] {node text} [advi/set advi={x=,y=}];
-    append after command={[ADVI/set advi]},
+    append after command={[ADVI/set advi={#1}]},
 % As the advi boxes are specified by lower-left corner, we anchor our
 % node at the lower-left so that the given coordinate is the node
 % coordinate
@@ -135,15 +134,19 @@
 % and `/tikz/advi/y` to specify the location of the node via the
 % `at` key.  We need to give the full path as we're currently in at
 % `/tikz/advi`
+    #1,
     % /tikz/at/.store=\origPos,
-    type/.default=node
+    % type/.default=node
   },
-% This next bit ensures that the `/tikz/advi/x` and `y` keys can be
-% used to store values.
-  % ADVI/.cd,
+  % This next bit ensures that the `/tikz/advi/type` and `precision` keys can be
+  % used to store values.
+  ADVI/.cd,
+  type/.initial=node,
+  precision/.initial=4,
+  duplicate/.initial=no,
 % This is the part that specifies the boxes in the dvi.  This is
 % actually executed after the node has been processed
-  ADVI/set advi/.code={
+  set advi/.code={
     \let\this@nodes@def\my@node@def
     \pgfpointxy{1}{1}
     \advixunit \pgf@x
@@ -168,7 +171,7 @@
     \pgfmathsetmacro{\advi@node@h}{(\pgf@ya - \pgf@y)/\the\advi@edit@yunit}%
     \pgfmathsetmacro{\advi@node@x}{(\pgf@x)/\the\advi@edit@xunit}%
     \pgfmathsetmacro{\advi@node@y}{(\pgf@y)/\the\advi@edit@yunit}%
-
+    %
     \tikz@scan@one@point\pgfutil@firstofone(\tikzlastnode)
     \pgfmathsetmacro{\advi@node@xm}{(\pgf@x)/\the\advi@edit@xunit}%
     \pgfmathsetmacro{\advi@node@ym}{(\pgf@y)/\the\advi@edit@yunit}%
@@ -197,7 +200,9 @@
     % \message{^^J}
     % \pgfkeysgetvalue{\pgfkeyscurrentpath}{\temp}%
     % \pgfkeys{/tikz/at/.print to log}
-    \adviedit[tikznode@\this@nodes@def @\advi@node@x @\advi@node@y @\advi@node@xm @\advi@node@ym]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
+    % TODO: Why do I have to do this?  Why didn't it take before?
+    \tikzset{/tikz/ADVI/.cd,#1}
+    \adviedit[tikz:\pgfkeysvalueof{/tikz/ADVI/type}:\pgfkeysvalueof{/tikz/ADVI/precision}:\pgfkeysvalueof{/tikz/ADVI/duplicate}@\this@nodes@def @\advi@node@x @\advi@node@y @\advi@node@xm @\advi@node@ym]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
     % \adviedit[tikznode:\advi@node@xm:\advi@node@ym:\val:\pgfkeysvalueof{/tikz/at}]{comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y}{}
     % \my@adviedit{advinode:\advi@node@x}{\advi@node@w}{\advi@node@h}{\advi@node@x}{\advi@node@y}
   }
