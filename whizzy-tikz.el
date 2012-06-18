@@ -115,9 +115,9 @@ Return nil if not in a tikz environment as defined by
         (narrow-to-region b1 e2)))))
 
 (defun whizzy-tikz-strip-trailing-zeros (string)
-  "Return STRING stripped of all whitespace."
+  "Return STRING stripped of trailing zeros and periods."
   (save-match-data
-    (while (string-match "0+$" string)
+    (while (string-match "\\.?0+$" string)
       (setq string (replace-match "" t t string))))
   string)
 
@@ -140,23 +140,18 @@ Return nil if not in a tikz environment as defined by
   (save-window-excursion
     (save-excursion
       (save-restriction
-        ;; (show file)
-        ;; (show name)
+        ;; Find the file and go to the correct line
         (and (prog1 (whizzy-goto-file file)
                (widen))
              (goto-char (point-min))
              (prog1 (forward-line (1- (string-to-number line)))
                (beginning-of-line))
 
-             ;; (narrow-to-defun)
-             ;; (show line)
-             ;; (sit-for 2)
-             ;; (show
+             ;; Try to minimize any damage we might do by accidentally
+             ;; changing a tikz node far away from the current one.
              (whizzy-narrow-to-tikz)
-             ;; )
 
-             ;; Here we need strict methods of finding and keep loosening them...
-
+             ;; The real work
              (let* (;; type orig x y xmid ymid
                     ;;  0    1   2 3  4    5
                     (pieces (split-string name "@"))
@@ -175,15 +170,12 @@ Return nil if not in a tikz environment as defined by
                     (replacement (format specifier newx newy))
                     ;; (regexp (aget whizzy-tikz-node-regexp 'lax))
                     (modified  (buffer-modified-p)))
-               ;; (show pieces)
-               ;; (show style-pieces)
-               ;; (show precision)
-               ;; (show specifier)
-               ;; (show replacement)
                (dolist (regexp (list
                                 ;; Check for an exact match
                                 (concat "\\b\\(" (nth 1 pieces) "\\)\\b")
-                                ;; Check for a fuzzy match
+                                ;; Check for a fuzzy match -- this
+                                ;; should actually depend on matcher
+                                ;; in style-pieces.
                                 (aget whizzy-tikz-node-regexp 'lax)))
                  ;; We should probably check how many there are and act accordingly
                  (when
@@ -191,12 +183,8 @@ Return nil if not in a tikz environment as defined by
                      (or (re-search-backward regexp (point-min) t)
                          (re-search-forward regexp (point-max) t))
 
-                   ;; (show 'there)
-                   ;; (sit-for 5)
-
-                   ;; We found one --
-                   (let (;(begin  (match-beginning 1))
-                         (edited
+                   ;; We found one -- replace it
+                   (let ((edited
                           ;;  (save-match-data
                           ;;    (and (string= (match-string-no-properties 1) dx)
                           ;;         (string= (match-string-no-properties 2) dy))))
@@ -205,25 +193,13 @@ Return nil if not in a tikz environment as defined by
                                           (buffer-substring-no-properties
                                            (line-beginning-position)
                                            (line-end-position)))))
-                     (sit-for 1)
-                     ;; (goto-char )
-
-
-                     ;; (show (match-string-no-properties 0))
-                     ;; (show (match-beginning 1))
-                     ;; (show (match-end 1))
-                     ;; (show (replace-match replacement t t nil 1))
+                     ;; Replace it
                      (replace-match replacement t t nil 1)
+                     ;; "Duplicate" it -- putting the new copy _after_ the old
                      (when saved-line
                        (beginning-of-line)
                        (insert saved-line))
-                     ;; Have to figure out how to account for center vs lower left
-                     ;; (replace-match dx t t nil 1)
-                     ;; (replace-match dy t t nil 2) ;or the other order??? Can you do both?
-                     ;; (goto-char begin)
-                     ;; (message "%S=%S %S=%S" x dx y dy)
-                     ;; (setq edited (whizzy-edit-field x dx))
-                     ;; (setq edited (or (whizzy-edit-field y dy) edited))
+                     ;; rewhizzify
                      (unless (not edited)
                        (if (or modified
                                (equal (whizzy-get whizzy-active-buffer)
