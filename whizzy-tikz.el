@@ -95,7 +95,7 @@ Return nil if not in a tikz environment as defined by
       (let* ((b1 (save-excursion
                    (beginning-of-line)
                    (when (search-backward ";" nil t)
-                       (forward-char 1))
+                     (forward-char 1))
                    (point)))
              (e1 (save-excursion
                    (beginning-of-line)
@@ -116,7 +116,8 @@ Return nil if not in a tikz environment as defined by
                      ;; Not guaranteed to work since might have
                      ;; semicolon in node name etc.
                      (point)))))
-        (narrow-to-region b1 e2)))))
+        (narrow-to-region b1 e2))
+      t)))
 
 (defun whizzy-tikz-strip-trailing-zeros (string)
   "Return STRING stripped of trailing zeros and periods."
