@@ -56,6 +56,9 @@
   '("tikzpicture"
     "scope"))
 
+;; TODO: need to support things like \Vertex[]{} which don't terminate
+;; with a semi-colon.  Should really check out
+;; https://github.com/blerner/auc-tikz and see if that can parse it.
 (defun whizzy-narrow-to-tikz ()
   "Currently only supports environment form of tikz.
 Return nil if not in a tikz environment as defined by
@@ -69,6 +72,7 @@ Return nil if not in a tikz environment as defined by
                 (< n 10))
       (setq n (1+ n))
       (setq env (LaTeX-current-environment n)))
+    ;; Narrow to the current environment
     (if (string= "document" env)
         nil ;; Couldn't narrow
       (narrow-to-region
@@ -82,7 +86,6 @@ Return nil if not in a tikz environment as defined by
          (let ((LaTeX-syntactic-comments nil))
            (dotimes (dummy n)
              (LaTeX-find-matching-end)))
-         ;; (sit-for 1)
          (point)))
 
       ;; Now try to limit to the current statement.
@@ -109,9 +112,10 @@ Return nil if not in a tikz environment as defined by
                      e1
                    (save-excursion
                      (end-of-line)
-                     (search-forward ";" nil t) ;; Maybe not guaranteed to work since
-                     ;; might have ; in node name etc.
-                     (show (point))))))
+                     (search-forward ";" nil t)
+                     ;; Not guaranteed to work since might have
+                     ;; semicolon in node name etc.
+                     (point)))))
         (narrow-to-region b1 e2)))))
 
 (defun whizzy-tikz-strip-trailing-zeros (string)
