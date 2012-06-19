@@ -1,3 +1,7 @@
+\RequirePackage{ifpdf}
+\ifpdf\else
+\RequirePackage{advi}
+\fi
 
 % TODO: resize the whole picture to scale it -- easyish
 % TODO: use a name/label somehow
@@ -142,6 +146,11 @@
     {comm=\advinode,w=\advi@node@w,h=\advi@node@h,x=\advi@node@x,y=\advi@node@y,line=\the\inputlineno}{}
   }
 }
+
+% Unset the style so that nothing happens
+\ifpdf
+\tikzset{ADVI/.style={}}
+\fi
 
 % Local Variables:
 % TeX-master: "test"
