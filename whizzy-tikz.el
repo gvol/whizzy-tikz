@@ -1,4 +1,6 @@
 
+(require 'whizzytex)
+
 ;; Overwrite -- this should be an advice, but I want it here for
 ;; reference.  At least for now
 (defun whizzy-edit (command name first line  file type dx dy)
@@ -194,7 +196,7 @@ Return nil if not in a tikz environment as defined by
                           ;;    (and (string= (match-string-no-properties 1) dx)
                           ;;         (string= (match-string-no-properties 2) dy))))
                           t)
-                         (saved-line (and (string= "duplicate" (nth 3 style-pieces))
+                         (saved-line (and (string= "yes" (nth 3 style-pieces))
                                           (buffer-substring-no-properties
                                            (line-beginning-position)
                                            (line-end-position)))))
@@ -203,7 +205,8 @@ Return nil if not in a tikz environment as defined by
                      ;; "Duplicate" it -- putting the new copy _after_ the old
                      (when saved-line
                        (beginning-of-line)
-                       (insert saved-line))
+                       (insert saved-line)
+                       (insert "\n"))
                      ;; rewhizzify
                      (unless (not edited)
                        (if (or modified
