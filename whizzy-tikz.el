@@ -92,33 +92,38 @@ Return nil if not in a tikz environment as defined by
 
       ;; Now try to limit to the current statement.
 
+      ;; If lines have been added since it was last resliced this can
+      ;; cause things to fail since it can narrow to the wrong line.
+      ;; So for now we just don't disable it.
+
       ;; This is not guaranteed to work since might have ; in node
       ;; name, comment etc.
-      (let* ((b1 (save-excursion
-                   (beginning-of-line)
-                   (when (search-backward ";" nil t)
-                     (forward-char 1))
-                   (point)))
-             (e1 (save-excursion
-                   (beginning-of-line)
-                   (search-forward ";" nil t) ;; Maybe not guaranteed to work since
-                   ;; might have ; in node name etc.
-                   (point)))
-             (lep (line-end-position))
-             ;; No because this will miss the ; at the end of the line!!!!
-             (just-this-line (or (> e1 lep)
-                                 (save-excursion
-                                   (goto-char e1)
-                                   (looking-at "\\s *\\(%\\|$\\)"))))
-             (e2 (if just-this-line
-                     e1
-                   (save-excursion
-                     (end-of-line)
-                     (search-forward ";" nil t)
-                     ;; Not guaranteed to work since might have
-                     ;; semicolon in node name etc.
-                     (point)))))
-        (narrow-to-region b1 e2))
+      (when nil
+        (let* ((b1 (save-excursion
+                     (beginning-of-line)
+                     (when (search-backward ";" nil t)
+                       (forward-char 1))
+                     (point)))
+               (e1 (save-excursion
+                     (beginning-of-line)
+                     (search-forward ";" nil t) ;; Maybe not guaranteed to work since
+                     ;; might have ; in node name etc.
+                     (point)))
+               (lep (line-end-position))
+               ;; No because this will miss the ; at the end of the line!!!!
+               (just-this-line (or (> e1 lep)
+                                   (save-excursion
+                                     (goto-char e1)
+                                     (looking-at "\\s *\\(%\\|$\\)"))))
+               (e2 (if just-this-line
+                       e1
+                     (save-excursion
+                       (end-of-line)
+                       (search-forward ";" nil t)
+                       ;; Not guaranteed to work since might have
+                       ;; semicolon in node name etc.
+                       (point)))))
+          (narrow-to-region b1 e2)))
       t)))
 
 (defun whizzy-tikz-strip-trailing-zeros (string)
